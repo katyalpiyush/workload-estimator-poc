@@ -10,7 +10,7 @@ func EstimateResourcesForData(dataset models.Dataset, workload models.Workload, 
 	ram = calculateDataRAM(dataset, workload)
 	cpu = calculateDataCPU(dataset, workload)
 	disk = calculateDataDisk(dataset, workload)
-	diskIO = calculateDataDiskIO(workload, nodes)
+	diskIO = calculateDataDiskIO(dataset, workload)
 
 	return ram, cpu, disk, diskIO
 }
@@ -181,7 +181,27 @@ func calculateDataDisk(dataset models.Dataset, workload models.Workload) float64
 }
 
 // calculateDataDiskIO computes the Disk I/O requirement for the Data service.
-func calculateDataDiskIO(workload models.Workload, nodes int) float64 {
-	diskIO := float64(workload.ReadPerSec+workload.WritesPerSec+workload.DeletesPerSec) * 10
-	return diskIO / float64(nodes) // Normalize by number of nodes
+func calculateDataDiskIO( dataset models.Dataset, workload models.Workload) float64 {
+	// Constants
+	const ttlExpiration = 0
+	const numReplicas = 1
+	const bucketType = "Couchbase"
+
+	// Step 1: Compute Expiry Ops Per Second (Same as RAM Calculation)
+	var expiryOpsPerSec float64
+	if ttlExpiration > 0 {
+		expiryOpsPerSec = float64(dataset.NoOfDocuments) / (float64(ttlExpiration) * 24 * 3600)
+	} else {
+		expiryOpsPerSec = 0
+	}
+
+	// Step 2: Compute Disk I/O
+	var diskIO float64
+	if bucketType == "Ephemeral" {
+		diskIO = 0
+	} else {
+		diskIO = (float64(workload.WritesPerSec) + float64(workload.DeletesPerSec) + expiryOpsPerSec) * float64(numReplicas+1)
+	}
+	
+	return diskIO
 }
