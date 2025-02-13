@@ -8,7 +8,7 @@ import (
 // EstimateResourcesForData calculates resources required for the Data service.
 func EstimateResourcesForData(dataset models.Dataset, workload models.Workload, nodes int) (ram, cpu, disk, diskIO float64) {
 	ram = calculateDataRAM(dataset, workload)
-	cpu = calculateDataCPU(workload, nodes)
+	cpu = calculateDataCPU(dataset, workload)
 	disk = calculateDataDisk(dataset, nodes)
 	diskIO = calculateDataDiskIO(workload, nodes)
 
@@ -97,9 +97,24 @@ func calculateDataRAM(dataset models.Dataset, workload models.Workload) float64 
 }
 
 // calculateDataCPU computes the CPU requirement for the Data service.
-func calculateDataCPU(workload models.Workload, nodes int) float64 {
-	cpu := float64(workload.ReadPerSec+workload.WritesPerSec+workload.DeletesPerSec) / 100.0
-	return cpu / float64(nodes) // Normalize by number of nodes
+func calculateDataCPU(dataset models.Dataset, workload models.Workload) float64 {
+	// Constants
+	const ttlExpiration = 0
+	const inboundXdcrStreams = 0
+	const outboundXdcrStreams = 0
+
+	// Step 1: Compute Expiry Ops Per Second (Same as RAM calculation)
+	var expiryOpsPerSec float64
+	if ttlExpiration > 0 {
+		expiryOpsPerSec = float64(dataset.NoOfDocuments) / (float64(ttlExpiration) * 24 * 3600)
+	} else {
+		expiryOpsPerSec = 0
+	}
+
+	// Step 2: Calculate CPU
+	cpu := float64(inboundXdcrStreams) + float64(outboundXdcrStreams) + ((float64(workload.WritesPerSec) + float64(workload.DeletesPerSec) + expiryOpsPerSec) / 10000)
+
+	return cpu
 }
 
 // calculateDataDisk computes the Disk Space requirement for the Data service.
