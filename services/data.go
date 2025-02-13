@@ -78,7 +78,7 @@ func calculateDataRAM(dataset models.Dataset, workload models.Workload) float64 
 	if evictionPolicy == "Value" {
 		totalWithJemallocAndTombstones = totalMemoryRequired + (totalMemoryRequired * jemallocBinSize)
 	} else { // Eviction policy = 'Full'
-		totalWithJemallocAndTombstones = totalMemoryRequired + (totalMemoryRequired * jemallocBinSize * float64(dataset.ResidentRatio))
+		totalWithJemallocAndTombstones = totalMemoryRequired + (totalMemoryRequired * jemallocBinSize * (float64(dataset.ResidentRatio) / 100))
 	}
 
 	// Add tombstone space if bucket type is Ephemeral
