@@ -11,7 +11,7 @@ func EstimateResourcesForIndex(dataset models.Dataset, workload models.Workload,
 	ram = calculateIndexRAM(dataset, 4)
 	// NEED TO CHANGE THE -----------^ PARAMETER (CURRENTLY HARDCODED)
 
-	cpu = calculateIndexCPU(workload, nodes)
+	cpu = calculateIndexCPU(workload)
 	disk = calculateIndexDisk(ram, nodes)
 	diskIO = calculateIndexDiskIO(workload, nodes)
 	return ram, cpu, disk, diskIO
@@ -90,10 +90,30 @@ func calculateIndexRAM(dataset models.Dataset, cpuAvailable int) float64 {
 	return ramQuota
 }
 
-// calculateIndexCPU computes the CPU requirement for the Index service.
-func calculateIndexCPU(workload models.Workload, nodes int) float64 {
-	cpu := float64(workload.SQLQueriesPerSec) / 100.0
-	return cpu / float64(nodes) // Normalize by number of nodes
+// calculateIndexCPU computes the CPU required for indexing.
+func calculateIndexCPU(workload models.Workload) float64 {
+	// Constants
+	const arrayIndexSizeOfEachElement = 0
+	const mutationRatePerSecond = 0
+	const mutationIngestThroughputPerCore = 12500
+	const avgIndexScansPerSecond = 0
+	const scanThroughputPerCore = 9000
+	const arrayLength = 0
+
+	// Plasma Expected Cores Required
+	var plasmaExpectedCores float64
+	if arrayIndexSizeOfEachElement == 0 {
+		plasmaExpectedCores = (float64(mutationRatePerSecond) / float64(mutationIngestThroughputPerCore)) +
+			(float64(avgIndexScansPerSecond) / float64(scanThroughputPerCore))
+	} else {
+		plasmaExpectedCores = ((float64(mutationRatePerSecond) * float64(arrayLength)) / float64(mutationIngestThroughputPerCore)) +
+			(float64(avgIndexScansPerSecond) / float64(scanThroughputPerCore))
+	}
+
+	// Total Required CPU
+	totalRequiredCPU := plasmaExpectedCores * 1.2
+
+	return totalRequiredCPU
 }
 
 // calculateIndexDisk computes the disk space required for indexing.
