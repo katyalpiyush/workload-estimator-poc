@@ -94,7 +94,5 @@ func CalculateSearchDisk(dataset models.Dataset) float64 {
 
 // CalculateSearchDiskIO calculates Disk I/O required for the Search service.
 func CalculateSearchDiskIO(workload models.Workload) float64 {
-	const diskIOMultiplier = 8.0
-	diskIO := float64(workload.ReadPerSec+workload.WritesPerSec) * diskIOMultiplier
-	return diskIO
+	return 0
 }
