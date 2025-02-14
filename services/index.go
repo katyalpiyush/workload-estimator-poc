@@ -12,7 +12,7 @@ func EstimateResourcesForIndex(dataset models.Dataset, workload models.Workload,
 	// NEED TO CHANGE THE -----------^ PARAMETER (CURRENTLY HARDCODED)
 
 	cpu = calculateIndexCPU(workload)
-	disk = calculateIndexDisk(ram, nodes)
+	disk = calculateIndexDisk(dataset)
 	diskIO = calculateIndexDiskIO(workload, nodes)
 	return ram, cpu, disk, diskIO
 }
@@ -117,9 +117,36 @@ func calculateIndexCPU(workload models.Workload) float64 {
 }
 
 // calculateIndexDisk computes the disk space required for indexing.
-func calculateIndexDisk(ram float64, nodes int) float64 {
-	disk := ram * 2 // Disk requirement is typically twice the RAM
-	return disk / float64(nodes) // Normalize by number of nodes
+func calculateIndexDisk(dataset models.Dataset) float64 {
+	// Constants
+	const documentKeyIDSize = 0
+	const totalSecondaryBytes = 0
+	const snappyCompression = 0.8
+	const fragmentation = 0.3
+
+	// Number of documents in index
+	numDocsIndex := float64(dataset.NoOfDocuments) * float64(dataset.PercentIndexesOfDataset) / 100
+
+	// Plasma Disk Size 
+	plasmaDiskSize := (((numDocsIndex * 2 / 400) * ((documentKeyIDSize + totalSecondaryBytes + 56) * 4)) +
+		((documentKeyIDSize + totalSecondaryBytes + 16) * numDocsIndex * 2)) * 2
+
+	// Plasma Compression
+	plasmaCompression := plasmaDiskSize * snappyCompression
+
+	// Plasma Fragmentation
+	plasmaFragmentation := plasmaDiskSize * fragmentation
+
+	// Plasma Expected Max Disk Usage
+	plasmaExpectedMaxDiskUsage := plasmaFragmentation + plasmaCompression
+
+	// Plasma 20% DGM Recommended Disk Quota
+	plasmaDGMRecommendedDiskQuota := plasmaExpectedMaxDiskUsage * 1.3
+	
+	// Convert to GB
+	plasmaDGMRecommendedDiskQuota = plasmaDGMRecommendedDiskQuota / 1024 / 1024 /1024
+
+	return plasmaDGMRecommendedDiskQuota
 }
 
 // calculateIndexDiskIO computes the disk I/O requirement for the Index service.
