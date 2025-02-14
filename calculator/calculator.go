@@ -44,7 +44,7 @@ func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
 			// Call the corresponding service calculator
 			switch service {
 			case "data":
-				ram, cpu, disk, diskIO = services.EstimateResourcesForData(request.Dataset, request.Workload, nodes)
+				ram, cpu, disk, diskIO = services.EstimateResourcesForData(request.Dataset, request.Workload)
 			case "index":
 				ram, cpu, disk, diskIO = services.EstimateResourcesForIndex(request.Dataset, request.Workload, nodes)
 			case "query":

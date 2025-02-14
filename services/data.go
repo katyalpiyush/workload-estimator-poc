@@ -6,7 +6,7 @@ import (
 )
 
 // EstimateResourcesForData calculates resources required for the Data service.
-func EstimateResourcesForData(dataset models.Dataset, workload models.Workload, nodes int) (ram, cpu, disk, diskIO float64) {
+func EstimateResourcesForData(dataset models.Dataset, workload models.Workload) (ram, cpu, disk, diskIO float64) {
 	ram = calculateDataRAM(dataset, workload)
 	cpu = calculateDataCPU(dataset, workload)
 	disk = calculateDataDisk(dataset, workload)
@@ -202,6 +202,6 @@ func calculateDataDiskIO( dataset models.Dataset, workload models.Workload) floa
 	} else {
 		diskIO = (float64(workload.WritesPerSec) + float64(workload.DeletesPerSec) + expiryOpsPerSec) * float64(numReplicas+1)
 	}
-	
+
 	return diskIO
 }
