@@ -13,7 +13,6 @@ func EstimateResourcesForSearch(dataset models.Dataset, workload models.Workload
 }
 
 // CalculateSearchRAM calculates RAM required for the Search service.
-// CalculateSearchRAM calculates RAM required for the Search service.
 func CalculateSearchRAM() float64 {
 	// Constants
 	const maxSize = 0
@@ -30,9 +29,13 @@ func CalculateSearchRAM() float64 {
 
 
 // CalculateSearchCPU calculates CPU required for the Search service.
-func CalculateSearchCPU(workload models.Workload) float64 {
-	const cpuDivisor = 150.0
-	cpu := float64(workload.ReadPerSec+workload.WritesPerSec) / cpuDivisor
+func CalculateSearchCPU() float64 {
+	// Constants
+	const numPartitions = 1 // Assuming a single index with a single partition
+
+	// CPU Calculation
+	cpu := float64(numPartitions)
+
 	return cpu
 }
 
