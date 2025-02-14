@@ -13,7 +13,7 @@ func EstimateResourcesForIndex(dataset models.Dataset, workload models.Workload,
 
 	cpu = calculateIndexCPU(workload)
 	disk = calculateIndexDisk(dataset)
-	diskIO = calculateIndexDiskIO(workload, nodes)
+	diskIO = calculateIndexDiskIO()
 	return ram, cpu, disk, diskIO
 }
 
@@ -150,7 +150,6 @@ func calculateIndexDisk(dataset models.Dataset) float64 {
 }
 
 // calculateIndexDiskIO computes the disk I/O requirement for the Index service.
-func calculateIndexDiskIO(workload models.Workload, nodes int) float64 {
-	diskIO := float64(workload.SQLQueriesPerSec) * 5
-	return diskIO / float64(nodes) // Normalize by number of nodes
+func calculateIndexDiskIO() float64 {
+	return 0
 }
