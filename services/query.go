@@ -6,7 +6,7 @@ import (
 )
 
 // EstimateResourcesForQuery calculates resources required for the Query service.
-func EstimateResourcesForQuery(dataset models.Dataset, workload models.Workload, nodes int) (ram, cpu, disk, diskIO float64) {
+func EstimateResourcesForQuery(dataset models.Dataset, workload models.Workload) (ram, cpu, disk, diskIO float64) {
 	ram = CalculateQueryRAM()
 	cpu = CalculateQueryCPU(workload)
 	disk = CalculateQueryDisk()
