@@ -1,0 +1,28 @@
+{
+  "service_groups" : [
+    {
+      "services" : ["data", "query", "index"],
+      "no_of_nodes" : 3,
+      "disk_type" : "gp3"
+    },
+    {
+      "services" : ["search", "analytics"],
+      "no_of_nodes" : 2,
+      "disk_type" : "gp3"
+    }
+  ],
+  "dataset" : {
+    "no_of_documents" : 100000,
+    "average_document_size" : 50000,
+    "resident_ratio" : 50,
+    "percent_indexes_of_dataset" : 10,
+    "percent_full_text_search_of_dataset" : 20,
+    "percent_operational_analytics_of_dataset" : 30
+  },
+  "workload" : {
+    "read_per_sec" : 1000,
+    "writes_per_sec" : 1000,
+    "deletes_per_sec" : 1000,
+    "sql_queries_per_sec" : 1000
+  }
+}
