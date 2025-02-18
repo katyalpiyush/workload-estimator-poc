@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 func estimateHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,8 +37,15 @@ func main() {
 	// Define API route
 	router.HandleFunc("/estimate", estimateHandler).Methods("POST")
 
-	// Start server
+	// CORS configuration
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:5173"}, // Allow the frontend's URL
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
+	})
+
+	// Start the server with CORS middleware
 	port := 8080
 	fmt.Printf("Server is running on port %d...\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), router))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), corsHandler.Handler(router)))
 }
