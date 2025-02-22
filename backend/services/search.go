@@ -9,13 +9,13 @@ import (
 func EstimateResourcesForSearch(dataset models.Dataset, workload models.Workload) (ram, cpu, disk, diskIO float64) {
 	ram = CalculateSearchRAM()
 	cpu = CalculateSearchCPU()
-	disk = CalculateSearchDisk(dataset)
-	diskIO = CalculateSearchDiskIO(workload)
+	disk = CalculateSearchDisk(dataset, workload)
+	diskIO = CalculateSearchDiskIO()
 
 	return ram, cpu, disk, diskIO
 }
 
-// CalculateSearchRAM calculates RAM required for the Search service.
+// CalculateSearchRAM calculates RAM required for the Search service. (verified)
 func CalculateSearchRAM() float64 {
 	// Constants
 	const maxSize = 0
@@ -24,36 +24,35 @@ func CalculateSearchRAM() float64 {
 	const documentMatchStructure = 160
 	const scansPerSecond = 0						// Currently taking as constant but required from user
 
-	// RAM Calculation
-	ram := (float64(maxSize+maxFrom+searchResultsSize) * float64(documentMatchStructure)) * scansPerSecond / 1024 / 1024 /1024
-
+	// RAM Calculation (In GB)
+	ram := math.Ceil(round(((maxSize + maxFrom + searchResultsSize) * float64(documentMatchStructure)) / ((1024 * 1024 * 1024)) * scansPerSecond, 2))
 	return ram
 }
 
-
-// CalculateSearchCPU calculates CPU required for the Search service.
+// CalculateSearchCPU calculates CPU required for the Search service. (verified)
 func CalculateSearchCPU() float64 {
 	// Constants
-	const numPartitions = 1 // Assuming a single index with a single partition
+	const numPartitions = 1 				// under advanced menu in sizing calculator - By default 1, Assuming a single index with a single partition
 
-	// CPU Calculation
-	cpu := float64(numPartitions)
+	// Step 1: CPU Calculation
+	cpu := math.Ceil(numPartitions)
 
 	return cpu
 }
 
-// CalculateSearchDisk calculates Disk space required for the Search service.
-func CalculateSearchDisk(dataset models.Dataset) float64 {
+// CalculateSearchDisk calculates Disk space required for the Search service. (verified)
+func CalculateSearchDisk(dataset models.Dataset, workload models.Workload) float64 {
 	// Constants
 	const index = false
 	const store = false
 	const includeInAllFields = false
 	const includeTermVectors = false
 	const docValues = false
-	const avgKeyIDSize = 0
-	const avgFieldLength = 1.21 // not sure about this - currently taking it equal to field length value
+	const avgKeySize = 0
+	const avgFieldLength = 0
 	const fieldLength = 1.21
 	const numReplicas = 0
+
 
 	// Step 1: Count If All (Sum of boolean values)
 	countIfAll := 0
@@ -73,26 +72,27 @@ func CalculateSearchDisk(dataset models.Dataset) float64 {
 		countIfAll++
 	}
 
-	// Step 2: Index Size Calculation
-	var indexSize float64
-	if countIfAll == 0 {
-		indexSize = ((float64(dataset.NoOfDocuments)*float64(avgKeyIDSize)) +
-			(float64(dataset.NoOfDocuments)*(float64(dataset.PercentIndexesOfDataset) / 100)*float64(avgFieldLength)*float64(fieldLength)*1.3))
+	// Step 2: Number of documents in index
+	numberOfDocuments := float64(dataset.NoOfDocuments)*(float64(dataset.PercentIndexesOfDataset) / 100)
+
+	// Step 3: Index Size Calculation (In MB)
+	var indexSize float64 = 0.0
+	if countIfAll == 0 && !index{
+		indexSize = round(((float64(dataset.NoOfDocuments) * avgKeySize) + (numberOfDocuments * avgFieldLength * fieldLength * 1.3)) / (1024 * 1024), 0)
 	} else {
-		indexSize = ((float64(dataset.NoOfDocuments)*float64(avgKeyIDSize)) +
-			(float64(dataset.NoOfDocuments)*(float64(dataset.PercentIndexesOfDataset) / 100)*float64(avgFieldLength)*float64(fieldLength)*float64(countIfAll)*1.5*fieldLength))
+		indexSize = round(((float64(dataset.NoOfDocuments) * avgKeySize) + (numberOfDocuments * avgFieldLength * fieldLength * float64(countIfAll) * 1.5 * fieldLength)) / (1024 * 1024), 0)
 	}
 
-	// Step 3: Disk Space Required
+	// Step 4: Disk Space Required
 	diskSpace := indexSize * (float64(numReplicas) + 1)
 
-	// Convert to GB
-	diskSpace = math.Ceil(diskSpace / 1024 / 1024 / 1024)
+	// Step 5: Convert to GB
+	diskSpace = math.Ceil(diskSpace / 1024)
+
 	return diskSpace
 }
 
-
-// CalculateSearchDiskIO calculates Disk I/O required for the Search service.
-func CalculateSearchDiskIO(workload models.Workload) float64 {
+// CalculateSearchDiskIO calculates Disk I/O required for the Search service. (verified)
+func CalculateSearchDiskIO() float64 {
 	return 0
 }
