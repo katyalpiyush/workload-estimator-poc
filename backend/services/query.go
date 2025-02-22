@@ -15,46 +15,50 @@ func EstimateResourcesForQuery(dataset models.Dataset, workload models.Workload)
 	return ram, cpu, disk, diskIO
 }
 
-// CalculateQueryRAM estimates the RAM required for the Query service.
+// CalculateQueryRAM estimates the RAM required for the Query service. (verified)
 func CalculateQueryRAM() float64 {
 	return 0
 }
 
-// CalculateQueryCPU estimates the CPU required for the Query service.
+// CalculateQueryCPU estimates the CPU required for the Query service. (verified)
 func CalculateQueryCPU(workload models.Workload) float64 {
 	// Constants
-	const SimpleQueryThroughputPerSecStaleOk = 0
+	const simpleQueryThroughputPerSecStaleOk = 0
 	const SIMPLE_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_OK = 14000.0 / 24.0
-	const SimpleQueryThroughputPerSecStaleFalse = 0
+	const simpleQueryThroughputPerSecStaleFalse = 0
 	const SIMPLE_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_FALSE = 700.0 / 24.0
-
-	const MediumQueryThroughputPerSecStaleOk = 0
+	
+	const mediumQueryThroughputPerSecStaleOk = 0
 	const MEDIUM_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_OK = 1500.0 / 24.0
+	var mediumQueryThroughputPerSecStaleFalse = workload.SQLQueriesPerSec
 	const MEDIUM_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_FALSE = 400.0 / 24.0
 
-	// Simple Query CPU Calculation
-	simpleQueryCPU := (float64(SimpleQueryThroughputPerSecStaleOk) / SIMPLE_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_OK) +
-		(float64(SimpleQueryThroughputPerSecStaleFalse) / SIMPLE_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_FALSE)
+	const complexQueryThroughputPerSecStaleOk = 0
+	const COMPLEX_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_OK = 700.0 / 24.0
+	const complexQueryThroughputPerSecStaleFalse = 0
+	const COMPLEX_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_FALSE = 200.0 / 24.0
 
-	// Medium Query CPU Calculation
-	mediumQueryCPU := (float64(MediumQueryThroughputPerSecStaleOk) / MEDIUM_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_OK) +
-		(float64(workload.SQLQueriesPerSec) / MEDIUM_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_FALSE)
+	// Step 1: Simple Query CPU Calculation
+	simpleQueryCPU := round((simpleQueryThroughputPerSecStaleOk / SIMPLE_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_OK) + (simpleQueryThroughputPerSecStaleFalse / SIMPLE_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_FALSE), 2)
 
-	// Complex Query CPU Required is always 0 as there is no formula defined
-	complexQueryCPU := 0.0
+	// Step 2: Medium Query CPU Calculation
+	mediumQueryCPU := round((mediumQueryThroughputPerSecStaleOk / MEDIUM_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_OK)	+ (float64(mediumQueryThroughputPerSecStaleFalse) / MEDIUM_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_FALSE), 2)
 
-	// Calculate Total CPU
+	// Step 3: Complex Query CPU Calculation
+	complexQueryCPU := round((complexQueryThroughputPerSecStaleOk / COMPLEX_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_OK) + (complexQueryThroughputPerSecStaleFalse / COMPLEX_QUERY_QUERIES_PER_SEC_PER_CORE_STALE_FALSE), 2)
+
+	// Step 4: Calculate Total CPU
 	totalCPU := math.Ceil(simpleQueryCPU + mediumQueryCPU + complexQueryCPU)
 
 	return totalCPU
 }
 
-// CalculateQueryDisk estimates the disk space required for the Query service.
+// CalculateQueryDisk estimates the disk space required for the Query service. (verified)
 func CalculateQueryDisk() float64 {
 	return 0
 }
 
-// CalculateQueryDiskIO estimates the disk I/O required for the Query service.
+// CalculateQueryDiskIO estimates the disk I/O required for the Query service. (verified)
 func CalculateQueryDiskIO() float64 {
 	return 0
 }
