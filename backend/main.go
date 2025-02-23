@@ -31,20 +31,17 @@ func estimateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Create a new router
 	router := mux.NewRouter()
 
-	// Define API route
 	router.HandleFunc("/estimate", estimateHandler).Methods("POST")
 
 	// CORS configuration
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:5173"}, // Allow the frontend's URL
+		AllowedOrigins: []string{"http://localhost:5173"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	})
 
-	// Start the server with CORS middleware
 	port := 8080
 	fmt.Printf("Server is running on port %d...\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), corsHandler.Handler(router)))

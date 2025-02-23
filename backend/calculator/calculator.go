@@ -8,16 +8,18 @@ import (
 	"encoding/json"
 )
 
+const CLUSTER_OPTION = "Custom"
+
 func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
-	// Apply default values
 	// Log the received request
 	requestJSON, err := json.MarshalIndent(request, "", "  ")
 	if err == nil {
 		log.Printf("Received Request: \n%s\n", string(requestJSON))
-	} else {
-		log.Println("Failed to log request")
-	}
-
+		} else {
+			log.Println("Failed to log request")
+		}
+		
+	// Apply default values
 	applyDefaults(&request)
 
 	// Log the received request
@@ -29,10 +31,14 @@ func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
 	}
 
 	var serviceGroupResults []models.ServiceGroupResult
+	var nodesAllocated int64 = 0
+	var servicesAll []string
 
 	// Iterate over service groups
 	for _, group := range request.ServiceGroups {
 		nodes := group.NoOfNodes
+		nodesAllocated += nodes
+		servicesAll = append(servicesAll, group.Services...)
 
 		// Lists to store resources for each service in the current group
 		var ramList, cpuList, diskList, diskIOList []float64
@@ -46,15 +52,15 @@ func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
 			case "data":
 				ram, cpu, disk, diskIO = services.EstimateResourcesForData(request.Dataset, request.Workload)
 			case "index":
-				ram, cpu, disk, diskIO = services.EstimateResourcesForIndex(request.Dataset, request.Workload, nodes)
+				ram, cpu, disk, diskIO = services.EstimateResourcesForIndex(request.Dataset, request.Workload)
 			case "query":
 				ram, cpu, disk, diskIO = services.EstimateResourcesForQuery(request.Dataset, request.Workload)
 			case "search":
 				ram, cpu, disk, diskIO = services.EstimateResourcesForSearch(request.Dataset, request.Workload)
 			case "eventing":
-				ram, cpu, disk, diskIO = services.EstimateResourcesForEventing(request.Dataset, request.Workload, nodes)
+				ram, cpu, disk, diskIO = services.EstimateResourcesForEventing(request.Dataset, request.Workload)
 			case "analytics":
-				ram, cpu, disk, diskIO = services.EstimateResourcesForAnalytics(request.Dataset, request.Workload, nodes)
+				ram, cpu, disk, diskIO = services.EstimateResourcesForAnalytics(request.Dataset, request.Workload)
 			}
 
 			// Add resources to corresponding lists
@@ -72,8 +78,8 @@ func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
 		fmt.Printf("Disk IO List: %v\n\n", diskIOList)
 
 		// Calculate the total resources for this service group
-		totalRAM := CalculateRAM(ramList, len(group.Services), nodes)
-		totalCPU := CalculateCPU(cpuList, len(group.Services), nodes)
+		totalRAM := CalculateRAM(ramList, group.Services, nodes)
+		totalCPU := CalculateCPU(cpuList, nodes)
 		totalDisk := CalculateDisk(diskList, nodes)
 		totalDiskIO := CalculateDiskIO(diskIOList, nodes, group.DiskType)
 
@@ -86,16 +92,28 @@ func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
 
 		// Store the result for this service group
 		serviceGroupResults = append(serviceGroupResults, models.ServiceGroupResult{
-			ServiceGroupType: fmt.Sprintf("Services: %v", group.Services),  
-			EstimatedRAM:     fmt.Sprintf("%.2f GB", totalRAM),
-			EstimatedCPU:     fmt.Sprintf("%.2f vCPUs", totalCPU),
-			EstimatedDisk:    fmt.Sprintf("%.2f GB", totalDisk),
-			EstimatedDiskIO:  fmt.Sprintf("%d IOPS", int(totalDiskIO)),
+			Services: 				group.Services,
+			Nodes:						group.NoOfNodes,
+			EstimatedRAM:			int64(totalRAM),
+			EstimatedCPU:     int64(totalCPU),
+			DiskType: 				group.DiskType,
+			EstimatedDisk:    int64(totalDisk),
+			EstimatedDiskIO:  int64(totalDiskIO),
 		})
 	}
 
-	// Return the results for each service group
+	// Create summary for all the service groups
+	summary := models.Summary{
+		ClusterOption:  CLUSTER_OPTION,
+		NodesAllocated: nodesAllocated,
+		ServiceGroups:  int64(len(request.ServiceGroups)),
+		Services:       servicesAll,
+		WorkloadType:   request.WorkloadNature,
+	}	
+
+	// Return the results for all the service groups
 	return models.ComputeResponse{
+		Summary: summary,
 		ServiceGroupsResults: serviceGroupResults,
 	}
 }
