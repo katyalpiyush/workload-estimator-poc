@@ -78,8 +78,8 @@ func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
 		fmt.Printf("Disk IO List: %v\n\n", diskIOList)
 
 		// Calculate the total resources for this service group
-		totalRAM := CalculateRAM(ramList, len(group.Services), nodes)
-		totalCPU := CalculateCPU(cpuList, len(group.Services), nodes)
+		totalRAM := CalculateRAM(ramList, group.Services, nodes)
+		totalCPU := CalculateCPU(cpuList, nodes)
 		totalDisk := CalculateDisk(diskList, nodes)
 		totalDiskIO := CalculateDiskIO(diskIOList, nodes, group.DiskType)
 
@@ -103,12 +103,13 @@ func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
 	}
 
 	// Create summary for all the service groups
-	var summary models.Summary;
-	summary.ClusterOption = CLUSTER_OPTION
-	summary.NodesAllocated = nodesAllocated
-	summary.ServiceGroups = int64(len(request.ServiceGroups))
-	summary.Services = servicesAll
-	summary.WorkloadType = request.WorkloadNature
+	summary := models.Summary{
+		ClusterOption:  CLUSTER_OPTION,
+		NodesAllocated: nodesAllocated,
+		ServiceGroups:  int64(len(request.ServiceGroups)),
+		Services:       servicesAll,
+		WorkloadType:   request.WorkloadNature,
+	}	
 
 	// Return the results for all the service groups
 	return models.ComputeResponse{
