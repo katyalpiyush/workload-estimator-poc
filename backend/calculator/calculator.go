@@ -58,7 +58,7 @@ func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
 			case "search":
 				ram, cpu, disk, diskIO = services.EstimateResourcesForSearch(request.Dataset, request.Workload)
 			case "eventing":
-				ram, cpu, disk, diskIO = services.EstimateResourcesForEventing(request.Dataset, request.Workload, int(nodes))
+				ram, cpu, disk, diskIO = services.EstimateResourcesForEventing(request.Dataset, request.Workload)
 			case "analytics":
 				ram, cpu, disk, diskIO = services.EstimateResourcesForAnalytics(request.Dataset, request.Workload, int(nodes))
 			}
