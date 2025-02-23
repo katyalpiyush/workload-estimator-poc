@@ -1,24 +1,28 @@
 package calculator
 
 import (
-	"workload-estimator-poc/models"
-	"workload-estimator-poc/services"
+	"encoding/json"
 	"fmt"
 	"log"
-	"encoding/json"
+	"workload-estimator-poc/models"
+	"workload-estimator-poc/services"
 )
 
 const CLUSTER_OPTION = "Custom"
 
 func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
+
+	// Convert Average Document Size from KB to Bytes
+	request.Dataset.AverageDocumentSize *= 1024
+
 	// Log the received request
 	requestJSON, err := json.MarshalIndent(request, "", "  ")
 	if err == nil {
 		log.Printf("Received Request: \n%s\n", string(requestJSON))
-		} else {
-			log.Println("Failed to log request")
-		}
-		
+	} else {
+		log.Println("Failed to log request")
+	}
+
 	// Apply default values
 	applyDefaults(&request)
 
@@ -92,13 +96,13 @@ func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
 
 		// Store the result for this service group
 		serviceGroupResults = append(serviceGroupResults, models.ServiceGroupResult{
-			Services: 				group.Services,
-			Nodes:						group.NoOfNodes,
-			EstimatedRAM:			int64(totalRAM),
-			EstimatedCPU:     int64(totalCPU),
-			DiskType: 				group.DiskType,
-			EstimatedDisk:    int64(totalDisk),
-			EstimatedDiskIO:  int64(totalDiskIO),
+			Services:        group.Services,
+			Nodes:           group.NoOfNodes,
+			EstimatedRAM:    int64(totalRAM),
+			EstimatedCPU:    int64(totalCPU),
+			DiskType:        group.DiskType,
+			EstimatedDisk:   int64(totalDisk),
+			EstimatedDiskIO: int64(totalDiskIO),
 		})
 	}
 
@@ -109,11 +113,11 @@ func EstimateResources(request models.ComputeRequest) models.ComputeResponse {
 		ServiceGroups:  int64(len(request.ServiceGroups)),
 		Services:       servicesAll,
 		WorkloadType:   request.WorkloadNature,
-	}	
+	}
 
 	// Return the results for all the service groups
 	return models.ComputeResponse{
-		Summary: summary,
+		Summary:              summary,
 		ServiceGroupsResults: serviceGroupResults,
 	}
 }
