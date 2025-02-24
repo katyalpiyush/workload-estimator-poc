@@ -53,11 +53,11 @@ const RecommendedConfig: React.FC<RecommendedConfigProps> = ({ summary, serviceG
                 <div className="flex flex-col gap-y-1">
                   <div className="text-neutral-800 text-[16px] font-medium">Summary</div>
                   <div>
-                    <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Option: </div><div className="text-neutral-500 text-sm font-medium">{summary.cluster_option}</div></p>
-                    <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Nodes Allocated: </div><div className="text-neutral-500 text-sm font-medium">{summary.nodes_allocated}</div></p>
-                    <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Service Groups: </div><div className="text-neutral-500 text-sm font-medium">{summary.service_groups}</div></p>
-                    <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Services: </div><div className="text-neutral-500 text-sm font-medium">{summary.services.map(service => service.charAt(0).toUpperCase() + service.slice(1)).join(", ")}</div></p>
-                    <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Workload&nbsp;Type: </div><div className="text-neutral-500 text-sm font-medium">{workloadLabels[summary.workload_type] || summary.workload_type}</div></p>
+                    <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Option: </div><div className="text-neutral-500 text-sm font-medium">{summary.cluster_option}</div></div>
+                    <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Nodes Allocated: </div><div className="text-neutral-500 text-sm font-medium">{summary.nodes_allocated}</div></div>
+                    <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Service Groups: </div><div className="text-neutral-500 text-sm font-medium">{summary.service_groups}</div></div>
+                    <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Services: </div><div className="text-neutral-500 text-sm font-medium">{summary.services.map(service => service.charAt(0).toUpperCase() + service.slice(1)).join(", ")}</div></div>
+                    <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Workload&nbsp;Type: </div><div className="text-neutral-500 text-sm font-medium">{workloadLabels[summary.workload_type] || summary.workload_type}</div></div>
                   </div>
                 </div>
               )}
@@ -65,14 +65,14 @@ const RecommendedConfig: React.FC<RecommendedConfigProps> = ({ summary, serviceG
                 <div className="flex flex-col gap-y-2">
                   <h3 className="text-neutral-800 text-[16px] font-medium">Detailed Breakdown</h3>
                   {serviceGroups.map((group, index) => (
-                    <div>
-                      <p className="flex flex-row gap-x-2"><h3 className="text-neutral-800 text-[14px] font-medium">Group {index + 1}:</h3><div className="text-neutral-800 text-[14px] font-medium">{group.services.map(service => service.charAt(0).toUpperCase() + service.slice(1)).join(", ")}</div></p>
-                      <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Nodes: </div><div className="text-neutral-500 text-sm font-medium">{group.nodes}</div></p>
-                      <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">CPU: </div><div className="text-neutral-500 text-sm font-medium">{group.estimated_cpu} vCPUs</div></p>
-                      <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">RAM: </div><div className="text-neutral-500 text-sm font-medium">{group.estimated_ram} GB</div></p>
-                      <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Disk Type: </div><div className="text-neutral-500 text-sm font-medium">{group.disk_type}</div></p>
-                      <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Disk Size: </div><div className="text-neutral-500 text-sm font-medium">{group.estimated_disk} GB</div></p>
-                      <p className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">IOPS: </div><div className="text-neutral-500 text-sm font-medium">{group.estimated_disk_io}</div></p>
+                    <div key={index}>
+                      <div className="flex flex-row gap-x-2"><h3 className="text-neutral-800 text-[14px] font-medium">Group {index + 1}:</h3><div className="text-neutral-800 text-[14px] font-medium">{group.services.map(service => service.charAt(0).toUpperCase() + service.slice(1)).join(", ")}</div></div>
+                      <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Nodes: </div><div className="text-neutral-500 text-sm font-medium">{group.nodes}</div></div>
+                      <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">CPU: </div><div className="text-neutral-500 text-sm font-medium">{group.estimated_cpu} vCPUs</div></div>
+                      <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">RAM: </div><div className="text-neutral-500 text-sm font-medium">{group.estimated_ram} GB</div></div>
+                      <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Disk Type: </div><div className="text-neutral-500 text-sm font-medium">{group.disk_type}</div></div>
+                      <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">Disk Size: </div><div className="text-neutral-500 text-sm font-medium">{group.estimated_disk} GB</div></div>
+                      <div className="flex flex-row gap-x-2"><div className="text-neutral-500 text-sm font-normal">IOPS: </div><div className="text-neutral-500 text-sm font-medium">{group.estimated_disk_io}</div></div>
                     </div>
                   ))}
                 </div>
